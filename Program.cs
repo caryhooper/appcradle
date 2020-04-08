@@ -2,64 +2,56 @@
 using System.Diagnostics;
 using System.Threading;
 
+
+// Start program
+// If it crashes, capture all that info
+// After a crash, log the crash
+// After a while, kill the process (if not already crashed)
+
+
 namespace AppCradle
 {
     class Program
     {
+        public static Cradle HandleArgs(string[] args)
+        {
+            if (args.Length == 0){
+                //No arguments given? Instantiate with calc.exe
+                return new Cradle();
+            }
+            else if (args.Length == 1){
+                return new Cradle(args[0]);
+            } else
+            {
+                //More than one argument given
+                Console.WriteLine($"Invalid number of arguments given: {args.Length}.\nUsage:");
+                Console.WriteLine("\t.\\AppCradle.exe /path/to/exe");
+                System.Environment.Exit(1);
+                return null;
+            }
+        }
         static void Main(string[] args)
         {
-            //Argument Handling https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/main-and-command-args/command-line-arguments
-            //string[] array (.Length)
-            if (args.Length != 1)
-            {
-                Console.WriteLine("Error.  Invalid arguments.");
-                Console.WriteLine("\t.\\AppCradle.exe /path/to/program.exe");
-            }
-            string exepath = args[0];
-            Console.WriteLine($"Hello World! - {exepath}");
-            //Using ProcessStartInfo class
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.UseShellExecute = false;
-            startInfo.CreateNoWindow = true;
-            startInfo.FileName = exepath;
-            startInfo.RedirectStandardError = true;
-            startInfo.RedirectStandardOutput = true;
-            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
-
-            //Set arguments
-            startInfo.Arguments = "";
-
-            //Call WaitForExit
-            try
-            {
-                using (Process exeProcess = Process.Start(startInfo))
-                {
-                    exeProcess.WaitForExit();
-                    Thread.Sleep(15000);
-                    exeProcess.Kill();
-                    //Ideally we could grab the PID from here during the Kill stub.
-                }
-            }
-            catch
-            {
-                //Log Error
-
-            }
-            
-            
-            //Stub to kill process
+            Cradle cradle = HandleArgs(args);
+            //Start process
+            cradle.StartProcess();
+            cradle.LogStart();
             Thread.Sleep(3000);
-            Process[] processes = Process.GetProcessesByName("Calculator");
-            Console.WriteLine("Total Processes: {0}", processes.Length);
-            foreach (Process process in processes)
+
+
+            var hasExited = cradle.CurrentProc.HasExited;
+            Console.WriteLine($"Has the program exited? {hasExited}");
+            if (hasExited == true)
             {
-                Console.WriteLine($"{process.ProcessName} - {process.Id}");
-                process.Kill();
+                // ... log things to file.
+                cradle.PlaySong();
+                cradle.DumpCrashToLog();
             }
-
-
-
+            if (cradle.CurrentProc != null && !cradle.CurrentProc.HasExited)
+            {
+                cradle.CurrentProc.Kill(); //This doesn't work for some reason.
+            }
         }
     }
 }
