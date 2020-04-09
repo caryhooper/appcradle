@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 
 
@@ -15,13 +14,17 @@ namespace AppCradle
     {
         public static Cradle HandleArgs(string[] args)
         {
-            if (args.Length == 0){
+            //ToDo: Add argument for # of iterations.
+            if (args.Length == 0)
+            {
                 //No arguments given? Instantiate with calc.exe
                 return new Cradle();
             }
-            else if (args.Length == 1){
+            else if (args.Length == 1)
+            {
                 return new Cradle(args[0]);
-            } else
+            }
+            else
             {
                 //More than one argument given
                 Console.WriteLine($"Invalid number of arguments given: {args.Length}.\nUsage:");
@@ -34,24 +37,16 @@ namespace AppCradle
         {
 
             Cradle cradle = HandleArgs(args);
-            //Start process
-            cradle.StartProcess();
-            cradle.LogStart();
-            Thread.Sleep(3000);
 
-
-            var hasExited = cradle.CurrentProc.HasExited;
-            Console.WriteLine($"Has the program exited? {hasExited}");
-            if (hasExited == true)
+            // Need better solution than do... while loop.
+            //ToDo: Add a way for the user to stop (# iterations, user-input key, etc.)
+            do
             {
-                // ... log things to file.
-                cradle.PlaySong();
-                cradle.DumpCrashToLog();
-            }
-            if (cradle.CurrentProc != null && !cradle.CurrentProc.HasExited)
-            {
-                cradle.CurrentProc.Kill(); //This doesn't work for some reason.
-            }
+                cradle.StartProcess();          //Start process
+                Thread.Sleep(3000);             //Wait for fuzzing to happen
+                cradle.CheckIfCrashed();        //Check for crash
+                cradle.KillProcess();
+            } while (true);
         }
     }
 }

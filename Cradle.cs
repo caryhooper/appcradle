@@ -1,25 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using System.Threading;
 
 namespace AppCradle
 {
+    //Should we derive Cradle from the System.Diagnostics.Process class?
     class Cradle
     {
         //constructor
-        public Cradle(string exepath = @"C:\Windows\System32\calc.exe")
+        public Cradle(string exepath = @"C:\Users\Cary\source\repos\formExplorer\formExplorer\bin\Debug\formExplorer.exe")
         {
             Exepath = exepath;
         }
         public string Exepath;
+        public int iteration = int.MinValue;
         public Process CurrentProc;
-        public string LogFileName = "cradle-log.txt";
-        
+        public Logger LogFile = new Logger("cradle-log.txt");
+
         public void StartProcess()
         {
+            iteration += 1;
             //prepare the process
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.UseShellExecute = false;
@@ -31,11 +31,42 @@ namespace AppCradle
 
             //start the process
             CurrentProc = Process.Start(startInfo);
+            Console.WriteLine($"Process {Exepath} has started with PID {CurrentProc.Id}");
+            LogFile.LogStart(Exepath);
+        }
+
+        public void CheckIfCrashed()
+        {
+            //ToDo logic to determine if process has crashed
+            CurrentProc.WaitForExit(3 * 1000);
+
+            try
+            {
+                //Crash Happens
+                Console.WriteLine($"Exit Code: {CurrentProc.ExitCode}");
+                PlaySong();
+                LogFile.LogCrash();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Program has not crashed: {ex.Message}");
+            }
+            finally
+            {
+                string message = $"** Iteration {iteration} completed. **";
+                Console.WriteLine(message);
+                CurrentProc.Kill();
+            }
+        }
+
+        internal void KillProcess()
+        {
+            CurrentProc.Kill();
         }
 
         internal void PlaySong()
         {
-            //ToDo - play a song thats more badass.
+            //ToDo - play a song thats more bad ass.
             int B = 247;
             int A = 220;
             int G = 196;
@@ -68,24 +99,6 @@ namespace AppCradle
             Console.Beep(B, 200);
             Console.Beep(A, 200);
             Console.Beep(G, 600);
-        }
-
-        internal void DumpCrashToLog()
-        {
-            using (var writer = File.AppendText(LogFileName))
-            {
-                //ToDo add crash dump data.  Stack dump + Registers + full memory dump? (no thank you)
-                var message = $"{DateTime.Now}: Crash! The application has crashed.";
-                writer.WriteLine(message);
-            }
-        }
-
-        internal void LogStart()
-        {
-            using (var writer = File.AppendText(LogFileName))
-            {
-                var message = $"{DateTime.Now}: {Exepath} has been started.";
-            }
         }
     }
 }
