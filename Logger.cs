@@ -3,32 +3,23 @@ using System.IO;
 
 namespace AppCradle
 {
-    class Logger
+    static class Logger
     {
+        //declare variables
+        private static StreamWriter writer = File.AppendText("cradle-log.txt");
+
         //constructor
-        public Logger(string logname = @"cradle-log.txt")
-        {
-            LogFileName = logname;
-        }
+        //public static Logger()
+        //{
+        //    writer = File.AppendText("cradle-log.txt");
+        //}
 
-        public string LogFileName = "cradle-log.txt";
-
-        internal void LogCrash()
+        internal static void Write(string message)
         {
-            using (var writer = File.AppendText(LogFileName))
-            {
-                //ToDo add crash dump data.  Stack dump + Registers + full memory dump? (no thank you)
-                var message = $"{DateTime.Now}: Crash! The application has crashed.";
-                Console.WriteLine(message);
-                writer.WriteLine(message);
-            }
-        }
-        internal void LogStart(string exepath)
-        {
-            using (var writer = File.AppendText(LogFileName))
-            {
-                var message = $"{DateTime.Now}: {exepath} has been started.";
-            }
+            //ToDo add crash dump data.  Stack dump + Registers + full memory dump? (no thank you)
+            message = $"{DateTime.Now}: {message}";
+            Console.WriteLine(message);
+            writer.WriteLine(message);
         }
     }
 }

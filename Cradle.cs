@@ -4,35 +4,35 @@ using System.Threading;
 
 namespace AppCradle
 {
-    //Should we derive Cradle from the System.Diagnostics.Process class?
     class Cradle
     {
+        private string Exepath;
+        private int Iteration { get; set; }
+        private Process CurrentProc;
+
         //constructor
-        public Cradle(string exepath = @"C:\Users\Cary\source\repos\formExplorer\formExplorer\bin\Debug\formExplorer.exe")
-        {
+        public Cradle(string exepath)
+        {            
             Exepath = exepath;
         }
-        public string Exepath;
-        public int iteration = int.MinValue;
-        public Process CurrentProc;
-        public Logger LogFile = new Logger("cradle-log.txt");
 
         public void StartProcess()
         {
-            iteration += 1;
+            Iteration += 1;
             //prepare the process
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.UseShellExecute = false;
-            startInfo.CreateNoWindow = true;
-            startInfo.FileName = Exepath;
-            startInfo.RedirectStandardError = true;
-            startInfo.RedirectStandardOutput = true;
-            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                FileName = Exepath,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
 
             //start the process
             CurrentProc = Process.Start(startInfo);
-            Console.WriteLine($"Process {Exepath} has started with PID {CurrentProc.Id}");
-            LogFile.LogStart(Exepath);
+            Console.WriteLine($"Process {Exepath} has started with PID {CurrentProc.Id}");            
         }
 
         public void CheckIfCrashed()
@@ -45,7 +45,7 @@ namespace AppCradle
                 //Crash Happens
                 Console.WriteLine($"Exit Code: {CurrentProc.ExitCode}");
                 PlaySong();
-                LogFile.LogCrash();
+                Logger.Write("Crashed!");
             }
             catch (Exception ex)
             {
@@ -53,7 +53,7 @@ namespace AppCradle
             }
             finally
             {
-                string message = $"** Iteration {iteration} completed. **";
+                string message = $"** Iteration {Iteration} completed. **";
                 Console.WriteLine(message);
                 CurrentProc.Kill();
             }

@@ -2,7 +2,7 @@
   "profiles": {
     "AppCradle": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Windows\\System32\\calc.exe"
+      "commandLineArgs": "C:\\Users\\Cary\\source\\repos\\formExplorer\\formExplorer\\bin\\Debug\\formExplorer.exe"
     }
   }
 }
